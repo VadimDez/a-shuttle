@@ -3,16 +3,34 @@
  */
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+
+declare let google: any;
 
 @Injectable()
 export class PlacesService {
-  static URL = 'https://maps.googleapis.com/maps/api/place/autocomplete/output?parameters';
-  static key = 'AIzaSyBSZ0zfL_F4_th4VHQTTrpj5Sr4G8lj4kk';
+  autocompleteService = new google.maps.places.AutocompleteService();
+  detailsService = new google.maps.places.PlacesService(document.createElement("input"));
 
-  constructor(private http: HttpClient) {}
+  get(search: string, countryCode?: string) {
+    return new Promise((resolve, reject) => {
+      this.autocompleteService.getPlacePredictions({
+        input: search,
+        componentRestrictions: { country: countryCode || 'de' }
+      }, (result, status) => {
+        if (status == google.maps.places.PlacesServiceStatus.OK) {
+          resolve(result);
+        } else {
+          reject(status);
+        }
+      });
+    })
+  }
 
-  get(search: string) {
-    this.http.get(`${ PlacesService.URL }?input=${ search }&key=${ PlacesService.key }`);
+  getDetails(placeId) {
+    return new Promise((resolve, reject) => {
+      this.detailsService.getDetails({ placeId: placeId }, (result) => {
+        resolve(result);
+      });
+    });
   }
 }
