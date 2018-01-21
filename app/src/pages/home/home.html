@@ -15,23 +15,28 @@
 <ion-content>
 
     <div class="journey" ion-fixed [class.search]="isEnteringDestination">
-      <ion-item *ngIf="false">
-        <ion-label>From</ion-label>
-        <ion-input #fromInput
-                   [(ngModel)]="from"
-                   type="text"
-                   placeholder="From"
-                   (ionFocus)="onClickFrom()"
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input #destinationInput
-                   [(ngModel)]="destination"
-                   type="text"
-                   placeholder="Where To?"
-                   (ionFocus)="onClickDestination()"
-        ></ion-input>
-      </ion-item>
+      <!--<ion-item>-->
+        <!--<ion-label>From</ion-label>-->
+        <!--<ion-input #fromInput-->
+                   <!--[(ngModel)]="from"-->
+                   <!--type="text"-->
+                   <!--placeholder="From"-->
+                   <!--(ionFocus)="onClickFrom()"-->
+        <!--&gt;</ion-input>-->
+      <!--</ion-item>-->
+      <!--<ion-item>-->
+        <!--<ion-label>To</ion-label>-->
+        <!--<ion-input #destinationInput-->
+                   <!--[(ngModel)]="destination"-->
+                   <!--type="text"-->
+                   <!--placeholder="Where To?"-->
+                   <!--(ionFocus)="onClickDestination()"-->
+        <!--&gt;</ion-input>-->
+      <!--</ion-item>-->
+
+        <button (click)="onClickDestination()">
+            Where to?
+        </button>
     </div>
 
     <div class="map-container" [hidden]="isEnteringDestination">
@@ -39,14 +44,6 @@
         <img *ngIf="isDestinationSet" src="assets/imgs/map-marker.png" class="map-marker">
 
         <button *ngIf="isDestinationSet" ion-button (click)="proceed()" class="btn-proceed">Proceed</button>
-    </div>
-
-    <div *ngIf="isEnteringDestination">
-        <ion-list>
-            <ion-item *ngFor="let item of searchResults" (click)="selectItemById(item.place_id)">
-                {{ item.description | json }}
-            </ion-item>
-        </ion-list>
     </div>
 
 </ion-content>

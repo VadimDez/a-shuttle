@@ -1,10 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<ion-header>
+    <ion-navbar>
+        <button ion-button
+                small
+                clear
+                (click)="toggleModal()"
+        >
+            Cancel
+        </button>
+        <ion-title>A-Shuttle</ion-title>
+    </ion-navbar>
+</ion-header>
 
-</body>
-</html>
+<ion-content>
+    <ion-item class="from">
+        <ion-label>From:</ion-label>
+        <ion-input [value]="'Current location'" disabled></ion-input>
+    </ion-item>
+
+    <ion-item>
+        <ion-label>To:</ion-label>
+        <ion-input #destinationInput
+                   [(ngModel)]="destination"
+                   placeholder="Where To?"
+        ></ion-input>
+    </ion-item>
+
+    <div>
+        <ion-list>
+            <ion-item *ngFor="let item of searchResults" (click)="selectItemById(item.place_id)">
+                {{ item.description }}
+            </ion-item>
+        </ion-list>
+    </div>
+</ion-content>

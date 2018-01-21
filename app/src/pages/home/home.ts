@@ -14,12 +14,10 @@ declare const google: any;
   selector: 'page-home',
   templateUrl: 'home.html'
 })
-export class HomePage implements AfterViewInit {
+export class HomePage {
   map: GoogleMap;
   location: MyLocation;
   @ViewChild('map') mapElement: ElementRef;
-  @ViewChild('fromInput') fromRef: ElementRef;
-  @ViewChild('destinationInput') destinationRef: ElementRef;
   isEnteringDestination: boolean = false;
   isDestinationSet: boolean = false;
   directionsService: any;
@@ -30,14 +28,10 @@ export class HomePage implements AfterViewInit {
   destinationLocation: any;
   currentLocation: MyLocation;
 
-  searchResults: any[];
-
   constructor(
     public navCtrl: NavController,
     private googleMaps: GoogleMaps,
     private platform: Platform,
-    private geocoder: Geocoder,
-    private placesService: PlacesService,
     public modalCtrl: ModalController
   ) {
     this.platform.ready().then(() => {
@@ -46,39 +40,6 @@ export class HomePage implements AfterViewInit {
       console.log(JSON.stringify(google.maps.DirectionsRenderer));
       this.loadMap();
     });
-  }
-
-  ngAfterViewInit() {
-    this.subscribeToTheFromChange();
-    this.subscribeToTheDestinationChange();
-  }
-
-  subscribeToTheFromChange() {
-    if (!this.fromRef) {
-      return;
-    }
-
-    Observable.from((this.fromRef as any).input)
-      .debounceTime(300)
-      .distinctUntilChanged()
-      .subscribe(() => {
-        this.onSearch(this.from);
-      });
-  }
-
-  subscribeToTheDestinationChange() {
-
-    console.log(this.destinationRef.nativeElement);
-    if (!this.destinationRef) {
-      return;
-    }
-
-    Observable.from((this.destinationRef as any).input)
-      .debounceTime(300)
-      .distinctUntilChanged()
-      .subscribe(() => {
-        this.onSearch(this.destination);
-      });
   }
 
   loadMap() {
@@ -118,6 +79,15 @@ export class HomePage implements AfterViewInit {
 
           this.map.setCameraTarget(location.latLng);
         });
+
+
+        // {"lat":48.135101318359375,"lng":11.581999778747559}
+        // {"lat":48.2187997,"lng":11.624707199999989}
+
+        // this.drawPolyline([
+        //   {"lat":48.135101318359375,"lng":11.581999778747559},
+        //   {"lat":48.2187997,"lng":11.624707199999989}
+        // ])
       });
 
 
@@ -138,44 +108,7 @@ export class HomePage implements AfterViewInit {
   }
 
   onClickDestination() {
-    // this.isEnteringDestination = true;
-    // this.destinationRef.nativeElement.blur();
     this.presentDestinationModal();
-  }
-
-  /**
-   * Search
-   * @param {string} string
-   */
-  onSearch(string: string) {
-    this.placesService.get(string)
-      .then((res: any[]) => {
-        this.searchResults = res;
-      });
-  }
-
-  selectItemById(id: string) {
-    this.placesService.getDetails(id)
-      .then((res: any) => {
-        this.destination = res.formatted_address;
-        this.destinationLocation = {
-          lat: res.geometry.location.lat(),
-          lng: res.geometry.location.lng()
-        };
-
-        this.isEnteringDestination = false;
-        this.isDestinationSet = true;
-        this.map.refreshLayout();
-
-        this.mapElement.nativeElement.style.height = '100%';
-
-        this.map.addMarker({
-          title: '',
-          animation: 'DROP',
-          position: this.destinationLocation,
-        }).then((marker: Marker) => {
-        });
-      });
   }
 
   calculateAndDisplayRoute() {
@@ -183,17 +116,80 @@ export class HomePage implements AfterViewInit {
       origin: this.currentLocation.latLng,
       destination: this.destinationLocation,
       travelMode: 'DRIVING'
-    }, function(response, status) {
-      if (status === 'OK') {
-        this.directionsDisplay.setDirections(response);
+    }, (response, status) => {
+      console.log('Response:');
+
+      if (response.status === 'OK') {
+        let points = [];
+        response.routes.legs.forEach(leg => {
+          points.push(leg.start_location);
+          points.push(leg.end_location);
+        });
+
+
+        let p = this.drawPolyline(points);
+        console.log(p);
+
+        // this.map.setBounds()
       } else {
         window.alert('Directions request failed due to ' + status);
       }
     });
   }
 
+  drawPolyline(points) {
+    return this.map.addPolyline({
+      // points: points
+      points,
+      color : '#AA00FF',
+      width: 10,
+      geodesic: true
+    });
+  }
+
   presentDestinationModal() {
-    let profileModal = this.modalCtrl.create(DestinationComponent, { userId: 8675309 });
+    let profileModal = this.modalCtrl.create(DestinationComponent, {});
     profileModal.present();
+
+    profileModal.onDidDismiss((res) => {
+      if (res) {
+        this.onSelectItem(res);
+      }
+    })
+  }
+
+  onSelectItem(res) {
+    this.destination = res.formatted_address;
+    this.destinationLocation = {
+      lat: res.geometry.location.lat(),
+      lng: res.geometry.location.lng()
+    };
+
+    this.isEnteringDestination = false;
+    this.isDestinationSet = true;
+
+    this.fixHeight();
+
+    this.addDestinationMarker();
+
+    this.calculateAndDisplayRoute();
+  }
+
+  /**
+   * Fix height due to keyboard
+   */
+  fixHeight() {
+    this.map.refreshLayout();
+    this.mapElement.nativeElement.style.height = '100%';
+  }
+
+  addDestinationMarker() {
+    this.map.addMarker({
+      title: '',
+      icon: 'red',
+      animation: 'DROP',
+      position: this.destinationLocation,
+    }).then((marker: Marker) => {
+    });
   }
 }
