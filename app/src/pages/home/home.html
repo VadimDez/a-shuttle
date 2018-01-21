@@ -14,7 +14,7 @@
 
 <ion-content>
 
-    <div class="journey" ion-fixed [class.search]="isEnteringDestination">
+    <div class="journey" ion-fixed [class.search]="isEnteringDestination" [hidden]="isDestinationSet">
       <!--<ion-item>-->
         <!--<ion-label>From</ion-label>-->
         <!--<ion-input #fromInput-->
@@ -40,8 +40,8 @@
     </div>
 
     <div class="map-container" [hidden]="isEnteringDestination">
-        <div #map id="map"></div>
-        <img *ngIf="isDestinationSet" src="assets/imgs/map-marker.png" class="map-marker">
+        <div #map id="map" ion-fixed></div>
+        <img *ngIf="!isDestinationSet" src="assets/imgs/map-marker.png" class="map-marker">
 
         <button *ngIf="isDestinationSet" ion-button (click)="proceed()" class="btn-proceed">Proceed</button>
     </div>

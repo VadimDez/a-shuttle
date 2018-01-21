@@ -32,13 +32,6 @@ export class DestinationComponent implements AfterContentInit {
     this.subscribeToTheFromChange();
     this.subscribeToTheDestinationChange();
 
-    console.log('a');
-    console.log(this.destinationRef.nativeElement);
-    setTimeout(() => {
-      console.log(this.destinationRef.nativeElement);
-    });
-    console.log('a');
-
     // this.destinationRef.nativeElement.focus();
   }
 
@@ -60,7 +53,9 @@ export class DestinationComponent implements AfterContentInit {
       .debounceTime(300)
       .distinctUntilChanged()
       .subscribe(() => {
-        this.onSearch(this.from);
+        if (this.from) {
+          this.onSearch(this.from);
+        }
       });
   }
 
@@ -74,7 +69,9 @@ export class DestinationComponent implements AfterContentInit {
       .debounceTime(300)
       .distinctUntilChanged()
       .subscribe(() => {
-        this.onSearch(this.destination);
+        if (this.destination) {
+          this.onSearch(this.destination);
+        }
       });
   }
 

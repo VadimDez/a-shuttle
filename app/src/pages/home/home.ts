@@ -2,13 +2,14 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ModalController, NavController, Platform, TextInput } from 'ionic-angular';
 import {
   GoogleMap, GoogleMapOptions, GoogleMaps, GoogleMapsEvent, MyLocation, Geocoder,
-  Marker
+  Marker, Polyline, LatLngBounds, LatLng
 } from '@ionic-native/google-maps';
 import { PlacesService } from '../../PlacesService';
 import {Observable} from 'rxjs/Rx';
 import { DestinationComponent } from '../../destination/destination.component';
 
 declare const google: any;
+declare const plugin: any;
 
 @Component({
   selector: 'page-home',
@@ -37,7 +38,6 @@ export class HomePage {
     this.platform.ready().then(() => {
       this.directionsService = new google.maps.DirectionsService();
       this.directionsDisplay = new google.maps.DirectionsRenderer({});
-      console.log(JSON.stringify(google.maps.DirectionsRenderer));
       this.loadMap();
     });
   }
@@ -59,7 +59,28 @@ export class HomePage {
 
         zoom: 18,
         // tilt: 30
-      }
+      },
+      'styles': [
+        {
+          featureType: "all",
+          stylers: [
+            { saturation: -80 }
+          ]
+        },{
+          featureType: "road.arterial",
+          elementType: "geometry",
+          stylers: [
+            { hue: "#00ffee" },
+            { saturation: 50 }
+          ]
+        },{
+          featureType: "poi.business",
+          elementType: "labels",
+          stylers: [
+            { visibility: "off" }
+          ]
+        }
+      ],
     };
 
     this.map = GoogleMaps.create(this.mapElement.nativeElement, mapOptions);
@@ -68,13 +89,9 @@ export class HomePage {
     // Wait the MAP_READY before using any methods.
     this.map.on(GoogleMapsEvent.MAP_READY)
       .subscribe(() => {
-        console.log('Map is ready!');
-
-        console.log(JSON.stringify(this.directionsDisplay));
         // this.directionsDisplay.setMap(this.map);
 
         this.map.getMyLocation().then((location: MyLocation) =>{
-          console.log('sucess location found');
           this.currentLocation = location;
 
           this.map.setCameraTarget(location.latLng);
@@ -117,31 +134,55 @@ export class HomePage {
       destination: this.destinationLocation,
       travelMode: 'DRIVING'
     }, (response, status) => {
-      console.log('Response:');
-
       if (response.status === 'OK') {
         let points = [];
-        response.routes.legs.forEach(leg => {
-          points.push(leg.start_location);
-          points.push(leg.end_location);
+        response.routes.forEach(route => {
+          Array.prototype.push.apply(points, route.overview_path);
+          // console.log(JSON.stringify(route));
+          // route.legs.forEach(leg => {
+          //   points.push(leg.start_location);
+          //   points.push(leg.end_location);
+          // });
         });
 
+        // console.log(JSON.stringify(points));
 
-        let p = this.drawPolyline(points);
-        console.log(p);
 
+        let p = this.drawPolyline([
+          this.currentLocation.latLng,
+          this.destinationLocation
+        ]).then((polyline: Polyline) => {
+          var latLngBounds: LatLngBounds = new plugin.google.maps.LatLngBounds();
+          latLngBounds.extend(this.currentLocation.latLng);
+          latLngBounds.extend(this.destinationLocation);
+
+          console.log('fitBonds');
+          console.log((this.map as any).fitBonds);
+
+          // console.log(JSON.stringify(this.map.getCameraPosition()));
+          // console.log(JSON.stringify(this.map.getCameraBearing()));
+          this.map.setCameraTarget(latLngBounds.getCenter());
+
+          // this.map.setCameraBearing({
+          //   "target": latLngBounds.getCenter(),
+          //   "southwest": latLngBounds.southwest,
+          //   "northeast": latLngBounds.northeast
+          // });
+
+          this.map.setCameraZoom(12);
+        });
         // this.map.setBounds()
       } else {
-        window.alert('Directions request failed due to ' + status);
+        alert('Directions request failed due to ' + status);
+        console.log('Directions request failed due to ' + status);
       }
     });
   }
 
   drawPolyline(points) {
     return this.map.addPolyline({
-      // points: points
       points,
-      color : '#AA00FF',
+      color : '#210a36',
       width: 10,
       geodesic: true
     });
