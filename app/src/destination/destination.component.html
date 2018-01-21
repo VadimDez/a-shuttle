@@ -7,7 +7,10 @@
         >
             Cancel
         </button>
-        <ion-title>A-Shuttle</ion-title>
+        <ion-title>
+            <img src="assets/imgs/audi-logo.png" height="40">
+            <span>Shuttle</span>
+        </ion-title>
     </ion-navbar>
 </ion-header>
 
@@ -28,6 +31,12 @@
     <div>
         <ion-list>
             <ion-item *ngFor="let item of searchResults" (click)="selectItemById(item.place_id)">
+                {{ item.description }}
+            </ion-item>
+        </ion-list>
+
+        <ion-list *ngIf="!searchResults.length">
+            <ion-item *ngFor="let item of suggestions" (click)="selectItemById(item.place_id)">
                 {{ item.description }}
             </ion-item>
         </ion-list>

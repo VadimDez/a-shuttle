@@ -1,0 +1,21 @@
+#success-modal .scroll-content {
+  display: flex;
+  flex-direction: column;
+
+  .main-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  img.check {
+    width: 100px;
+  }
+
+  button {
+    background-color: #000;
+    margin: 40px;
+  }
+}

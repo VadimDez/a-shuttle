@@ -17,7 +17,8 @@ export class DestinationComponent implements AfterContentInit {
 
   from: string;
   destination: string;
-  searchResults: any[];
+  searchResults: any[] = [];
+  suggestions: any[] = [];
 
   constructor(
     params: NavParams,

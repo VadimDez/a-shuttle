@@ -8,11 +8,14 @@
     >
       Cancel
     </button>
-    <ion-title>A-Shuttle</ion-title>
+    <ion-title>
+        <img src="assets/imgs/audi-logo.png" height="40">
+        <span>Shuttle</span>
+    </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content>
+<ion-content  ion-fixed>
 
     <div class="journey" ion-fixed [class.search]="isEnteringDestination" [hidden]="isDestinationSet">
       <!--<ion-item>-->
@@ -43,7 +46,11 @@
         <div #map id="map" ion-fixed></div>
         <img *ngIf="!isDestinationSet" src="assets/imgs/map-marker.png" class="map-marker">
 
-        <button *ngIf="isDestinationSet" ion-button (click)="proceed()" class="btn-proceed">Proceed</button>
+    </div>
+
+    <div *ngIf="isDestinationSet" ion-fixed class="btn-proceed__container">
+        <button ion-button (click)="proceed()" class="btn-proceed btn-proceed__now">Pickup now</button>
+        <button ion-button (click)="proceed()" class="btn-proceed btn-proceed__later">Later</button>
     </div>
 
 </ion-content>

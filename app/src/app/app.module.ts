@@ -22,6 +22,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { PlacesService } from '../PlacesService';
 import { HttpClientModule } from '@angular/common/http';
 import { DestinationComponent } from '../destination/destination.component';
+import { SuccessModalComponent } from '../success/success-modal.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { DestinationComponent } from '../destination/destination.component';
     ContactPage,
     HomePage,
     TabsPage,
-    DestinationComponent
+    DestinationComponent,
+    SuccessModalComponent
   ],
   imports: [
     BrowserModule,
@@ -44,7 +46,8 @@ import { DestinationComponent } from '../destination/destination.component';
     ContactPage,
     HomePage,
     TabsPage,
-    DestinationComponent
+    DestinationComponent,
+    SuccessModalComponent
   ],
   providers: [
     StatusBar,

@@ -2,6 +2,14 @@ page-home {
 
 }
 
+.toolbar-title.toolbar-title-ios {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+
 .map-container {
   position: relative;
 }
@@ -40,8 +48,24 @@ page-home {
   left: calc(50% - 17px);
 }
 
-.btn-proceed {
+.btn-proceed__container {
   position: absolute;
+  display: flex;
   bottom: 0;
-  text-align: center;
+  left: 0;
+  right: 0;
+  margin: 15px 70px 10px 15px;
+
+  .btn-proceed {
+    background-color: #000;
+
+    &.btn-proceed__now {
+      flex: 1;
+    }
+    &.btn-proceed__later {
+      border: 1px solid #000;
+      color: #000;
+      background-color: #fff;
+    }
+  }
 }

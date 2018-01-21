@@ -7,6 +7,7 @@ import {
 import { PlacesService } from '../../PlacesService';
 import {Observable} from 'rxjs/Rx';
 import { DestinationComponent } from '../../destination/destination.component';
+import { SuccessModalComponent } from '../../success/success-modal.component';
 
 declare const google: any;
 declare const plugin: any;
@@ -118,6 +119,10 @@ export class HomePage {
     console.log('asdasd');
     console.log(JSON.stringify(this.map.getCameraPosition().target));
 
+    let successModal = this.modalCtrl.create(SuccessModalComponent);
+    successModal.present();
+
+    this.map.clear();
   }
 
   onClickFrom() {
@@ -152,12 +157,9 @@ export class HomePage {
           this.currentLocation.latLng,
           this.destinationLocation
         ]).then((polyline: Polyline) => {
-          var latLngBounds: LatLngBounds = new plugin.google.maps.LatLngBounds();
+          var latLngBounds: LatLngBounds = new plugin.google.maps.LatLngBounds([]);
           latLngBounds.extend(this.currentLocation.latLng);
           latLngBounds.extend(this.destinationLocation);
-
-          console.log('fitBonds');
-          console.log((this.map as any).fitBonds);
 
           // console.log(JSON.stringify(this.map.getCameraPosition()));
           // console.log(JSON.stringify(this.map.getCameraBearing()));
