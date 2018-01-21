@@ -1,0 +1,30 @@
+.ion-ios-audi-car,
+.ion-ios-audi-car-outline,
+.ion-md-audi-car,
+.ion-ios-audi-poi,
+.ion-ios-audi-poi-outline,
+.ion-md-audi-poi {
+  width: 48px;
+  height: 48px !important;
+  padding: 6px 4px 2px;
+  margin: 5px;
+  opacity: 0.9;
+}
+
+.ion-ios-audi-car,
+.ion-ios-audi-car-outline,
+.ion-md-audi-car {
+  content: url(../../assets/icon/car-large.png);
+}
+
+.ion-ios-audi-poi,
+.ion-ios-audi-poi-outline,
+.ion-md-audi-poi {
+  content: url(../../assets/icon/poi-large.png);
+}
+
+.ion-ios-audi-user,
+.ion-ios-audi-user-outline,
+.ion-md-audi-user {
+  content: url(../../assets/icon/user-large.png);
+}

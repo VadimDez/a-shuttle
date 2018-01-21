@@ -1,22 +1,45 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { ModalController, NavController, Platform, TextInput } from 'ionic-angular';
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ModalController, NavController, Platform } from 'ionic-angular';
 import {
-  GoogleMap, GoogleMapOptions, GoogleMaps, GoogleMapsEvent, MyLocation, Geocoder,
+  GoogleMap, GoogleMapOptions, GoogleMaps, GoogleMapsEvent, MyLocation,
   Marker, Polyline, LatLngBounds, LatLng
 } from '@ionic-native/google-maps';
-import { PlacesService } from '../../PlacesService';
-import {Observable} from 'rxjs/Rx';
 import { DestinationComponent } from '../../destination/destination.component';
 import { SuccessModalComponent } from '../../success/success-modal.component';
 
 declare const google: any;
 declare const plugin: any;
 
+type RouteResponse = {
+  geocoded_waypoints: any,
+  routes: {
+    0: {
+      bounds: {
+        "south": number,
+        "west": number,
+        "north": number,
+        "east": number
+      },
+      copyrights: any,
+      legs: any,
+      overview_polyline: any,
+      summary: any,
+      warnings: any,
+      waypoint_order: any,
+      overview_path: any
+    }
+  },
+  status: any,
+  request: any
+}
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
+  static DEFAULT_ZOOM = 18;
+
   map: GoogleMap;
   location: MyLocation;
   @ViewChild('map') mapElement: ElementRef;
@@ -57,8 +80,7 @@ export class HomePage {
         rotate: true
       },
       camera: {
-
-        zoom: 18,
+        zoom: HomePage.DEFAULT_ZOOM,
         // tilt: 30
       },
       'styles': [
@@ -92,11 +114,7 @@ export class HomePage {
       .subscribe(() => {
         // this.directionsDisplay.setMap(this.map);
 
-        this.map.getMyLocation().then((location: MyLocation) =>{
-          this.currentLocation = location;
-
-          this.map.setCameraTarget(location.latLng);
-        });
+        this.setMapToCurrentLocation();
 
 
         // {"lat":48.135101318359375,"lng":11.581999778747559}
@@ -116,13 +134,20 @@ export class HomePage {
   }
 
   proceed() {
-    console.log('asdasd');
-    console.log(JSON.stringify(this.map.getCameraPosition().target));
-
     let successModal = this.modalCtrl.create(SuccessModalComponent);
     successModal.present();
 
+    successModal.onDidDismiss(() => {
+      this.reset();
+    });
+  }
+
+  reset() {
     this.map.clear();
+    this.isEnteringDestination = false;
+    this.isDestinationSet = false;
+
+    this.resetMap();
   }
 
   onClickFrom() {
@@ -134,57 +159,44 @@ export class HomePage {
   }
 
   calculateAndDisplayRoute() {
-    this.directionsService.route({
-      origin: this.currentLocation.latLng,
-      destination: this.destinationLocation,
-      travelMode: 'DRIVING'
-    }, (response, status) => {
-      if (response.status === 'OK') {
-        let points = [];
-        response.routes.forEach(route => {
-          Array.prototype.push.apply(points, route.overview_path);
-          // console.log(JSON.stringify(route));
-          // route.legs.forEach(leg => {
-          //   points.push(leg.start_location);
-          //   points.push(leg.end_location);
-          // });
-        });
-
-        // console.log(JSON.stringify(points));
-
-
-        let p = this.drawPolyline([
+    this.getRoute()
+      .then((response: RouteResponse) => {
+        let points = [
           this.currentLocation.latLng,
-          this.destinationLocation
-        ]).then((polyline: Polyline) => {
-          var latLngBounds: LatLngBounds = new plugin.google.maps.LatLngBounds([]);
-          latLngBounds.extend(this.currentLocation.latLng);
-          latLngBounds.extend(this.destinationLocation);
+          ...response.routes[0].overview_path.map(v => new LatLng(v.lat(), v.lng()))
+        ];
 
-          // console.log(JSON.stringify(this.map.getCameraPosition()));
-          // console.log(JSON.stringify(this.map.getCameraBearing()));
-          this.map.setCameraTarget(latLngBounds.getCenter());
 
-          // this.map.setCameraBearing({
-          //   "target": latLngBounds.getCenter(),
-          //   "southwest": latLngBounds.southwest,
-          //   "northeast": latLngBounds.northeast
-          // });
-
-          this.map.setCameraZoom(12);
+        this.drawPolyline(points).then((polyline: Polyline) => {
+          this.map.moveCamera({
+            target: points,
+            padding: 200
+          });
         });
-        // this.map.setBounds()
-      } else {
-        alert('Directions request failed due to ' + status);
-        console.log('Directions request failed due to ' + status);
-      }
+      });
+  }
+
+  getRoute() {
+    return new Promise((resolve, reject) => {
+      this.directionsService.route({
+        origin: this.currentLocation.latLng,
+        destination: this.destinationLocation,
+        travelMode: 'DRIVING'
+      }, (response, status) => {
+        if (response.status === 'OK') {
+          resolve(response);
+        } else {
+          console.log('Directions request failed due to ' + status);
+          reject(response);
+        }
+      });
     });
   }
 
   drawPolyline(points) {
     return this.map.addPolyline({
       points,
-      color : '#210a36',
+      color : '#F20030',
       width: 10,
       geodesic: true
     });
@@ -232,7 +244,19 @@ export class HomePage {
       icon: 'red',
       animation: 'DROP',
       position: this.destinationLocation,
-    }).then((marker: Marker) => {
+    });
+  }
+
+  resetMap() {
+    this.setMapToCurrentLocation();
+    this.map.setCameraZoom(HomePage.DEFAULT_ZOOM);
+  }
+
+  setMapToCurrentLocation() {
+    this.map.getMyLocation().then((location: MyLocation) =>{
+      this.currentLocation = location;
+
+      this.map.setCameraTarget(location.latLng);
     });
   }
 }
